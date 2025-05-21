@@ -1,0 +1,78 @@
+# =========================================
+# Python 通用忽略规则
+# =========================================
+
+# Byte-compiled / optimized / DLLs
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C 扩展
+*.so
+
+# 分发 / 打包
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+*.egg-info/
+.Python
+pip-wheel-metadata/
+
+# 虚拟环境
+.venv/
+venv/
+ENV/
+env/
+
+# 日志文件
+*.log
+interpreter_log_*.txt
+
+# Unit test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# =========================================
+# IDE / 编辑器
+# =========================================
+
+# PyCharm
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VSCode
+.vscode/
+
+# 其他编辑器
+*~
+*.swp
+*.swo
+
+# =========================================
+# 操作系统
+# =========================================
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
