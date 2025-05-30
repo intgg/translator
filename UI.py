@@ -1512,7 +1512,19 @@ class MainWindow(QMainWindow):
             devices = sd.query_devices()
 
             # 输入设备
-            input_devices = [(i, device['name']) for i, device in enumerate(devices)
+            input_devices = []
+            # 首先添加WASAPI和ASIO设备（通常这些是音频应用首选）
+            for i, device in enumerate(devices):
+                if device['max_input_channels'] > 0:
+                    name = device['name']
+                    hostapi = sd.query_hostapis(device['hostapi'])['name']
+                    # 只显示WASAPI和ASIO设备
+                    if 'WASAPI' in hostapi or 'ASIO' in hostapi:
+                        input_devices.append((i, f"{name} ({hostapi})"))
+
+            # 如果没有找到WASAPI或ASIO设备，则显示所有设备
+            if not input_devices:
+                input_devices = [(i, device['name']) for i, device in enumerate(devices)
                              if device['max_input_channels'] > 0]
 
             for idx, name in input_devices:
@@ -1527,8 +1539,19 @@ class MainWindow(QMainWindow):
                         self.selected_input_device_idx = idx
                         break
 
-            # 输出设备
-            output_devices = [device['name'] for device in devices
+            # 输出设备 - 同样只显示WASAPI和ASIO设备
+            output_devices = []
+            for i, device in enumerate(devices):
+                if device['max_output_channels'] > 0:
+                    name = device['name']
+                    hostapi = sd.query_hostapis(device['hostapi'])['name']
+                    # 只显示WASAPI和ASIO设备
+                    if 'WASAPI' in hostapi or 'ASIO' in hostapi:
+                        output_devices.append(f"{name} ({hostapi})")
+
+            # 如果没有找到WASAPI或ASIO设备，则显示所有设备
+            if not output_devices:
+                output_devices = [device['name'] for device in devices
                               if device['max_output_channels'] > 0]
 
             self.output_device.addItems(output_devices)
