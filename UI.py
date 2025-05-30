@@ -1520,47 +1520,59 @@ class MainWindow(QMainWindow):
                     hostapi = sd.query_hostapis(device['hostapi'])['name']
                     # 只显示WASAPI和ASIO设备
                     if 'WASAPI' in hostapi or 'ASIO' in hostapi:
-                        input_devices.append((i, f"{name} ({hostapi})"))
+                        # 只显示设备名称，不显示ID
+                        input_devices.append((i, name))
 
             # 如果没有找到WASAPI或ASIO设备，则显示所有设备
             if not input_devices:
                 input_devices = [(i, device['name']) for i, device in enumerate(devices)
                              if device['max_input_channels'] > 0]
 
-            for idx, name in input_devices:
-                self.input_device.addItem(f"{name} (ID: {idx})")
+            self.input_devices = input_devices
+            
+            # 更新两个不同的UI组件（如果存在）
+            if hasattr(self, 'ui') and hasattr(self.ui, 'comboBox_input_device'):
+                self.ui.comboBox_input_device.clear()
+                for _, device_name in input_devices:
+                    self.ui.comboBox_input_device.addItem(device_name)
+                    
+            if hasattr(self, 'input_device'):
+                self.input_device.clear()
+                for _, device_name in input_devices:
+                    self.input_device.addItem(device_name)
 
-            # 设置默认输入设备
-            if input_devices:
-                default_input = sd.default.device[0]
-                for i, (idx, name) in enumerate(input_devices):
-                    if idx == default_input:
-                        self.input_device.setCurrentIndex(i)
-                        self.selected_input_device_idx = idx
-                        break
-
-            # 输出设备 - 同样只显示WASAPI和ASIO设备
+            # 输出设备
             output_devices = []
+            # 首先添加WASAPI和ASIO设备
             for i, device in enumerate(devices):
                 if device['max_output_channels'] > 0:
                     name = device['name']
                     hostapi = sd.query_hostapis(device['hostapi'])['name']
                     # 只显示WASAPI和ASIO设备
                     if 'WASAPI' in hostapi or 'ASIO' in hostapi:
-                        output_devices.append(f"{name} ({hostapi})")
+                        # 只显示设备名称，不显示ID
+                        output_devices.append((i, name))
 
             # 如果没有找到WASAPI或ASIO设备，则显示所有设备
             if not output_devices:
-                output_devices = [device['name'] for device in devices
+                output_devices = [(i, device['name']) for i, device in enumerate(devices)
                               if device['max_output_channels'] > 0]
 
-            self.output_device.addItems(output_devices)
-
-            if output_devices:
-                self.selected_output_device_name = output_devices[0]
-
+            self.output_devices = output_devices
+            
+            # 更新两个不同的UI组件（如果存在）
+            if hasattr(self, 'ui') and hasattr(self.ui, 'comboBox_output_device'):
+                self.ui.comboBox_output_device.clear()
+                for _, device_name in output_devices:
+                    self.ui.comboBox_output_device.addItem(device_name)
+                    
+            if hasattr(self, 'output_device'):
+                self.output_device.clear()
+                for _, device_name in output_devices:
+                    self.output_device.addItem(device_name)
+                    
         except Exception as e:
-            self.log_message(f"加载音频设备失败: {e}")
+            print("填充音频设备列表时出错:", e)
 
     def populate_target_languages(self):
         """填充目标语言列表"""
@@ -1677,18 +1689,35 @@ class MainWindow(QMainWindow):
 
     def on_input_device_changed(self):
         """输入设备改变"""
-        text = self.input_device.currentText()
-        if " (ID: " in text:
-            try:
-                self.selected_input_device_idx = int(text.split(' (ID: ')[-1][:-1])
-                self.log_message(f"选择输入设备 ID: {self.selected_input_device_idx}")
-            except ValueError:
-                pass
+        # 确定当前所使用的UI组件
+        if hasattr(self, 'ui') and hasattr(self.ui, 'comboBox_input_device'):
+            idx = self.ui.comboBox_input_device.currentIndex()
+        elif hasattr(self, 'input_device'):
+            idx = self.input_device.currentIndex()
+        else:
+            return
+            
+        if idx >= 0 and idx < len(self.input_devices):
+            # 直接从保存的设备列表中获取设备ID
+            device_id = self.input_devices[idx][0]
+            self.selected_input_device_idx = device_id
+            self.log_message(f"选择输入设备 ID: {self.selected_input_device_idx}")
 
     def on_output_device_changed(self):
         """输出设备改变"""
-        self.selected_output_device_name = self.output_device.currentText()
-        self.log_message(f"选择输出设备: {self.selected_output_device_name}")
+        # 确定当前所使用的UI组件
+        if hasattr(self, 'ui') and hasattr(self.ui, 'comboBox_output_device'):
+            idx = self.ui.comboBox_output_device.currentIndex()
+        elif hasattr(self, 'output_device'):
+            idx = self.output_device.currentIndex()
+        else:
+            return
+            
+        if idx >= 0 and idx < len(self.output_devices):
+            # 直接从保存的设备列表中获取设备名称
+            device_name = self.output_devices[idx][1]
+            self.selected_output_device_name = device_name
+            self.log_message(f"选择输出设备: {self.selected_output_device_name}")
 
         # 重新初始化Pygame Mixer
         if self.mixer_initialized:
