@@ -1,0 +1,17 @@
+# 忽略模型缓存目录
+models/
+resources/
+
+# 忽略 Python 缓存
+__pycache__/
+*.pyc
+
+# 忽略日志
+logs/
+
+# 忽略虚拟环境（如有）
+.venv/
+env/
+
+# 忽略 PyCharm 配置（如使用 PyCharm）
+.idea/
